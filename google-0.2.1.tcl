@@ -16,12 +16,20 @@ bind pub - !google pub:google
 
 set agent "Mozilla"
 
+proc google:query {channel subdomain path} {
+	if {$channel == "#faif"} {
+		return "http://$subdomain.google.com/$path?btnI=&hl=en&q="
+	} else {
+		return "http://$subdomain.google.pl/$path?btnI=&hl=pl&q="
+	}
+}
+
 proc pub:google { nick uhost handle channel arg } {
 	global agent
 	if {[llength $arg]==0} {
 		putserv "PRIVMSG $channel :$nick: usage: !google <search term>"
 	} else {
-		set query "http://www.google.com/search?btnI=&hl=en&q="
+		set query [google:query $channel www search]
 		for { set index 0 } { $index<[llength $arg] } { incr index } {
 			set query "$query[lindex $arg $index]"
 			if {$index<[llength $arg]-1} then {
@@ -48,7 +56,7 @@ proc pub:image { nick uhost handle channel arg } {
 	if {[llength $arg]==0} {
 		putserv "PRIVMSG $channel :hey ! tappes des mots boulet !"
 	} else {
-		set query "http://images.google.com/images?btnI=&hl=en&q="
+		set query [google:query $channel www images]
 		for { set index 0 } { $index<[llength $arg] } { incr index } {
 			set query "$query[lindex $arg $index]"
 			if {$index<[llength $arg]-1} then {
