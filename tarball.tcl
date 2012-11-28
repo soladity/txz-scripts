@@ -8,7 +8,7 @@ namespace eval txz {
 ### Common
 
 proc say {nick channel data} {
-	putserv "PRIVMSG $channel :$nick: $data"
+	puthelp "PRIVMSG $channel :$nick: $data"
 }
 
 
@@ -155,7 +155,7 @@ proc setTopic {nick channel topic} {
 		set new [string range $current [expr 1 + [string first "|" $current]] [string length $current]]
 		set new "$topic | [string trim $new]"
 		if {$new != $current} {
-			putserv "PRIVMSG ChanServ :TOPIC $channel $new"
+			putmode "PRIVMSG ChanServ :TOPIC $channel $new"
 		}
 		if {[llength $nick]} {
 			say $nick $channel $topic
@@ -194,7 +194,7 @@ proc pub:refresh {nick uhost handle channel arg} {
 	if [catch { refresh } e] {
 		puthelp "PRIVMSG $nick :There was an error doing a refresh: $e"
 	} else {
-		putserv "PRIVMSG $nick :Refresh finished"
+		puthelp "PRIVMSG $nick :Refresh finished"
 	}
 }
 
