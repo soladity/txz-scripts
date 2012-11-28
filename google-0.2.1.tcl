@@ -11,8 +11,8 @@
 package require http
 
 bind pub - !google pub:google
-bind pub - !image pub:image
-bind pub - !file pub:file
+# bind pub - !image pub:image
+# bind pub - !file pub:file
 
 set agent "Mozilla"
 
