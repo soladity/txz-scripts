@@ -19,7 +19,7 @@ set agent "Mozilla"
 proc pub:google { nick uhost handle channel arg } {
  global agent
 	if {[llength $arg]==0} {
-		putserv "PRIVMSG $channel :hey ! tappes des mots boulet !"
+		putserv "PRIVMSG $channel :$nick: usage: !google <search term>"
 	} else {
 		set query "http://www.google.com/search?btnI=&hl=en&q="
 		for { set index 0 } { $index<[llength $arg] } { incr index } {
