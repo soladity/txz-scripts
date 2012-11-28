@@ -2,6 +2,9 @@ package require csv
 package require struct::matrix
 
 
+namespace eval txz {
+
+
 ### Common
 
 proc say {nick channel data} {
@@ -17,11 +20,11 @@ proc readFaifCSV {filename data} {
 
 	if {[catch {
 		set fd [open $filename]
-		csv::read2matrix $fd tmp
+		csv::read2matrix $fd [namespace current]::tmp
 		close $fd
 
-		if {[tmp rows]} {
-			$data = tmp
+		if {[[namespace current]::tmp rows]} {
+			$data = [namespace current]::tmp
 		}
 	} e]} {
 		putlog "Error while reading $filename: $e"
@@ -52,9 +55,9 @@ proc initFaif {} {
 	readFaifCSV scripts/data/sfls sfls
 	refreshFaif
 
-	bind pub - "!faif" pub:faif
-	bind pub - "!sfls" pub:sfls
-	bind pub - "!sflc" pub:sfls
+	bind pub - "!faif" [namespace current]::pub:faif
+	bind pub - "!sfls" [namespace current]::pub:sfls
+	bind pub - "!sflc" [namespace current]::pub:sfls
 }
 
 proc findFaif {dataset pattern} {
@@ -195,16 +198,7 @@ proc pub:refresh {nick uhost handle channel arg} {
 	}
 }
 
-proc initGlobal {} {
-	bind pub - "!topic" pub:topic
-	bind pub - "!help" pub:help
-	bind pub n "!refresh" pub:refresh
-}
-
-
-### Main
-
-proc refresh:body {} {
+proc refresh {} {
 	global faif_topic slack_topic
 	putlog "tarball: refreshing"
 	catch { refreshFaif }
@@ -214,13 +208,25 @@ proc refresh:body {} {
 	putlog "tarball: refresh done."
 }
 
-proc refresh {} {
-	refresh:body
-	timer 5 refresh
+proc timer {min hour day month year} {
+	if {![$min % 5]} {
+		refresh
+	}
 }
+
+proc initGlobal {} {
+	bind pub - "!topic"   [namespace current]::pub:topic
+	bind pub - "!help"    [namespace current]::pub:help
+	bind pub n "!refresh" [namespace current]::pub:refresh
+	bind time - *         [namespace current]::timer
+}
+
+
+### Main
 
 initFaif
 initSlack
 initGlobal
 
-timer 5 refresh
+
+}
