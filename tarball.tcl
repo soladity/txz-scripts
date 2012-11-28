@@ -61,7 +61,9 @@ proc initFaif {} {
 }
 
 proc findFaif {dataset pattern} {
-	if {[string length $pattern] != 0} {
+	if {[$dataset rows] == 0} {
+		return {}
+	} elseif {[string length $pattern] != 0} {
 		set matching {}
 		foreach col {1 4} {
 			foreach pos [$dataset search -nocase -regexp column $col $pattern] {
@@ -69,8 +71,6 @@ proc findFaif {dataset pattern} {
 			}
 		}
 		return [lsort -unique $matching]
-	} elseif {[$dataset rows] == 0} {
-		return {}
 	} else {
 		return {0}
 	}
