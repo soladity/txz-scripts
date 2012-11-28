@@ -12,25 +12,28 @@ proc say {nick channel data} {
 ### FAIF
 
 proc readFaifCSV {filename data} {
-	catch {
-		struct::matrix tmp
-		tmp add columns 5
+	struct::matrix tmp
+	tmp add columns 5
 
+	if {[catch {
 		set fd [open $filename]
 		csv::read2matrix $fd tmp
 		close $fd
 
-		if {[tmp rows ]} {
+		if {[tmp rows]} {
 			$data = tmp
 		}
-		tmp destroy
+	} e]} {
+		putlog "Error while reading $filename: $e"
 	}
+
+	tmp destroy
 }
 
 proc refreshFaif {} {
 	global faif_topic
-	if {! [catch {readFaifCSV scripts/data/faif faif}]
-	 && 0 < [faif rows]} {
+	readFaifCSV scripts/data/faif faif
+	if {[faif rows]} {
 		set row [faif get row 0]
 		set faif_topic "[lindex $row 1] <[lindex $row 3]>"
 	}
@@ -46,8 +49,8 @@ proc initFaif {} {
 	struct::matrix sfls
 	sfls add columns 5
 
-	catch { readFaifCSV scripts/data/sfls sfls }
-	catch { refreshFaif }
+	readFaifCSV scripts/data/sfls sfls
+	refreshFaif
 
 	bind pub - "!faif" pub:faif
 	bind pub - "!sfls" pub:sfls
@@ -105,11 +108,12 @@ proc pub:sfls {nick uhost handle channel arg} {
 ### Slackware
 
 proc readFile {filename} {
-	if [catch {
+	if {[catch {
 		set fd [open $filename]
 		set data [read $fd]
 		close $fd
-	}] {
+	} e]} {
+		putlog "Error reading $filename: $e"
 		return ""
 	} else {
 		return [string trim $data]
@@ -135,7 +139,7 @@ proc refreshSlack {} {
 proc initSlack {} {
 	global slack_topic
 	set slack_topic ""
-	catch { refreshSlack }
+	refreshSlack
 }
 
 
