@@ -191,8 +191,8 @@ proc pub:help {nick uhost handle channel arg} {
 }
 
 proc pub:refresh {nick uhost handle channel arg} {
-	if [catch { refresh:body } e] {
-		putserv "PRIVMSG $nick :There was an error doing a refresh: $e"
+	if [catch { refresh } e] {
+		puthelp "PRIVMSG $nick :There was an error doing a refresh: $e"
 	} else {
 		putserv "PRIVMSG $nick :Refresh finished"
 	}
@@ -200,25 +200,23 @@ proc pub:refresh {nick uhost handle channel arg} {
 
 proc refresh {} {
 	global faif_topic slack_topic
-	putlog "tarball: refreshing"
+	putlog "tarball: Refreshing"
 	catch { refreshFaif }
 	catch { refreshSlack }
 	catch { setTopic {} "#faif" $faif_topic }
 	catch { setTopic {} "#slackware.pl" $slack_topic }
-	putlog "tarball: refresh done."
 }
 
 proc timer {min hour day month year} {
-	if {![$min % 5]} {
-		refresh
-	}
+	refresh
 }
 
 proc initGlobal {} {
 	bind pub - "!topic"   [namespace current]::pub:topic
 	bind pub - "!help"    [namespace current]::pub:help
 	bind pub n "!refresh" [namespace current]::pub:refresh
-	bind time - *         [namespace current]::timer
+	bind time - {?2 *}    [namespace current]::timer
+	bind time - {?7 *}    [namespace current]::timer
 }
 
 
