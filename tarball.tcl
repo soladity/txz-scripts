@@ -177,7 +177,10 @@ proc pub:topic {nick uhost handle channel arg} {
 }
 
 proc pub:help {nick uhost handle channel arg} {
-	say $nick $channel "!google <query> -- perform google query"
+	say $nick $channel "!google <query> -- perform Google query"
+	if {![channel get $channel wiki]} {
+		say $nick $channel "!wiki <query> -- perform Wikipedia query"
+	}
 	if {$channel == "#faif"} {
 		say $nick $channel "!faif [<query>] -- look for an episode of Free as in Freedom or get the most recent"
 		say $nick $channel "!sfls [<query>] -- look for an episode of Software Freedom Law Show or get the most recent"
