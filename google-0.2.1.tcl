@@ -21,7 +21,7 @@ proc pub:google { nick uhost handle channel arg } {
 	if {[llength $arg]==0} {
 		putserv "PRIVMSG $channel :hey ! tappes des mots boulet !"
 	} else {
-		set query "http://www.google.de/search?btnI=&q="
+		set query "http://www.google.com/search?btnI=&hl=en&q="
 		for { set index 0 } { $index<[llength $arg] } { incr index } {
 			set query "$query[lindex $arg $index]"
 			if {$index<[llength $arg]-1} then {
@@ -48,7 +48,7 @@ proc pub:image { nick uhost handle channel arg } {
 	if {[llength $arg]==0} {
 		putserv "PRIVMSG $channel :hey ! tappes des mots boulet !"
 	} else {
-		set query "http://images.google.de/images?btnI=&q="
+		set query "http://images.google.com/images?btnI=&hl=en&q="
 		for { set index 0 } { $index<[llength $arg] } { incr index } {
 			set query "$query[lindex $arg $index]"
 			if {$index<[llength $arg]-1} then {
