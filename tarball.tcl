@@ -205,8 +205,9 @@ proc refresh {} {
 	putlog "tarball: refreshing"
 	catch { refreshFaif }
 	catch { refreshSlack }
-	catch { setTopic $nick "#faif" $faif_topic }
-	catch { setTopic $nick "#slackware.pl" $slack_topic }
+	catch { setTopic {} "#faif" $faif_topic }
+	catch { setTopic {} "#slackware.pl" $slack_topic }
+	putlog "tarball: refresh done."
 	timer 5 refresh
 }
 
