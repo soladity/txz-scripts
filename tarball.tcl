@@ -60,6 +60,11 @@ proc initFaif {} {
 	bind pub - "!sflc" [namespace current]::pub:sfls
 }
 
+proc deinitFaif {} {
+	faif destroy
+	sfls destroy
+}
+
 proc findFaif {dataset pattern} {
 	if {[$dataset rows] == 0} {
 		return {}
@@ -229,5 +234,8 @@ initFaif
 initSlack
 initGlobal
 
+proc deinit {} {
+	deinitFaif
+}
 
 }
