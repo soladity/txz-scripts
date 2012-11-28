@@ -123,10 +123,10 @@ proc refreshSlack {} {
 	set kernel [readFile scripts/data/kernel]
 
 	set slack_topic {}
-	if { 0 < [string length $slack] } {
+	if { [string length $slack] } {
 		lappend slack_topic "Slackware: $slack"
 	}
-	if { 0 < [string length $kernel] } {
+	if { [string length $kernel] } {
 		lappend slack_topic "Linux: $kernel"
 	}
 	set slack_topic [join $slack_topic "; "]
