@@ -40,7 +40,7 @@ set youtube(tiny_url)           0
 # %tinyurl%         Tiny URL for youtube link. tiny_url needs to be set above.
 # Example:
 #   set youtube(response_format) "\"%title%\" ( %tinyurl% )"
-set youtube(response_format) "Youtube Title: \"%title%\""
+set youtube(response_format) "YouTube Title: \"%title%\""
 # Bind syntax, alter as suits your needs
 bind pubm - * public_youtube
 # Pattern used to patch youtube links in channel public text
