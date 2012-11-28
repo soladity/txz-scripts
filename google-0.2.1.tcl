@@ -17,7 +17,7 @@ bind pub - !google pub:google
 set agent "Mozilla"
 
 proc pub:google { nick uhost handle channel arg } {
- global agent
+	global agent
 	if {[llength $arg]==0} {
 		putserv "PRIVMSG $channel :$nick: usage: !google <search term>"
 	} else {
@@ -29,7 +29,7 @@ proc pub:google { nick uhost handle channel arg } {
 			}
 		}
 		#putserv "PRIVMSG $channel :$query"
-                set token [http::config -useragent $agent]
+		set token [http::config -useragent $agent]
 		set token [http::geturl $query]
 		puts stderr ""
 		upvar #0 $token state
