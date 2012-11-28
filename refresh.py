@@ -76,7 +76,7 @@ KERNEL_SORT_KEY = re.compile(r'[-.]').split
 def getKernelTypes(url):
     types = collections.defaultdict(set)
     root = getXMLRoot(url)
-    for title in root.iter('{http://purl.org/rss/1.0/}title'):
+    for title in root.findall('.//{http://purl.org/rss/1.0/}title'):
         m = KERNEL_TITLE_CHECK(title.text)
         if not m:
             continue
@@ -125,7 +125,7 @@ FAIF_TITLE_RE = re.compile(r'^(?:episode\s*)?0x([0-9a-f]+)', re.I)
 
 def getFAIFVersions(url):
     root = getXMLRoot(FAIF_URL)
-    for item in root.iter('item'):
+    for item in root.findall('.//item'):
         title = item.find('title')
         link = item.find('link')
         date = item.find('pubDate')
