@@ -202,11 +202,12 @@ proc initGlobal {} {
 
 proc refresh {} {
 	global faif_topic slack_topic
+	putlog "tarball: refreshing"
 	catch { refreshFaif }
 	catch { refreshSlack }
 	catch { setTopic $nick "#faif" $faif_topic }
 	catch { setTopic $nick "#slackware.pl" $slack_topic }
-	timer 15 refresh
+	timer 5 refresh
 }
 
 initFaif
