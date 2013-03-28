@@ -63,20 +63,22 @@ def writeCSV(filename, rows):
 def getShortLink(url):
     query = urllib.urlencode([('longurl', url)])
     root = getXMLRoot(SHORT_URL, query)
-    for a in root.findall(".//p[@class='success']a"):
-        return a.attrib.get('href')
+    for p in root.findall('.//p'):
+        if p.attrib.get('class') == 'success':
+            for a in p.findall('a'):
+                return a.attrib.get('href')
 
 
 ### Kernel
 
 KERNEL_TITLE_CHECK = re.compile(r'^(.*): (.*)$').search
-KERNEL_TYPE_ORDER = ( 'mainline', 'stable' )
+KERNEL_TYPE_ORDER = ( 'mainline', 'stable', 'longterm' )
 KERNEL_SORT_KEY = re.compile(r'[-.]').split
 
 def getKernelTypes(url):
     types = collections.defaultdict(set)
     root = getXMLRoot(url)
-    for title in root.findall('.//{http://purl.org/rss/1.0/}title'):
+    for title in root.findall('.//title'):
         m = KERNEL_TITLE_CHECK(title.text)
         if not m:
             continue
@@ -96,8 +98,6 @@ def buildKernelTopic(types):
 def kernel(_):
     types = getKernelTypes(KERNEL_RSS_URL)
     return buildKernelTopic(types)
-    if topic:
-        saveTopic(KERNEL_OUTPUT_FILE, topic)
 
 
 ### Slackware
