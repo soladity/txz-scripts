@@ -4,6 +4,7 @@ import collections
 import csv
 import os
 import re
+import signal
 import traceback
 import urllib
 import xml.etree.ElementTree as ET
@@ -190,4 +191,5 @@ def main():
 
 
 if __name__ == '__main__':
+    signal.alarm(600)
     main()
