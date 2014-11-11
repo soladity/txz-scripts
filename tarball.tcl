@@ -160,7 +160,7 @@ proc setTopic {nick channel topic} {
 		set new [string range $current [expr 1 + [string first "|" $current]] [string length $current]]
 		set new "$topic | [string trim $new]"
 		if {$new != $current} {
-			putmode "PRIVMSG ChanServ :TOPIC $channel $new"
+			putserv "PRIVMSG ChanServ :TOPIC $channel $new"
 		}
 		if {[llength $nick]} {
 			say $nick $channel $topic
