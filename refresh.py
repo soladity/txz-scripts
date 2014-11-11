@@ -147,6 +147,16 @@ def getFAIFVersions(url):
 
         yield (ver, title, link, None, date)
 
+def normaliseFAIFVersion(entry):
+    # 0x5A has been release out of order (see note at
+    # <http://faif.us/cast/2014/oct/23/0x5A/>).  Sort it in release order.
+    ver = int(entry[0], 16)
+    if ver == 0x5A:
+        ver = 0x50
+    elif ver >= 0x50:
+        ver += 1
+    return ver
+
 def faif(filename):
     versions = dict()
     links = dict()
@@ -167,7 +177,7 @@ def faif(filename):
         versions[ver] = (ver, title, full_link, short_link or '', date)
 
     versions = versions.values()
-    versions.sort(reverse=True)
+    versions.sort(key=normaliseFAIFVersion, reverse=True)
     writeCSV(filename, versions)
 
 
