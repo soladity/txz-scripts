@@ -9,6 +9,9 @@
 #  TCL version 8.1.1 or newer http://wiki.tcl.tk/450
 #
 #  Changes:
+#  0.6 11/11/14
+#    [mina86] Added support for https and youtu.be URLs.  Made the pattern
+#    stricter.  Replace JSON parser with standard json TCL package.
 #  0.5 01/02/09
 #    Added better error reporting for restricted youtube content.
 #  0.4 10/11/09
@@ -23,6 +26,8 @@
 #  Configuration
 #
 ###############################################################################
+
+package require json
 
 # Maximum time to wait for youtube to respond
 set youtube(timeout)            "30000"
@@ -44,7 +49,7 @@ set youtube(response_format) "YouTube Title: \"%title%\""
 # Bind syntax, alter as suits your needs
 bind pubm - * public_youtube
 # Pattern used to patch youtube links in channel public text
-set youtube(pattern) {http://.*youtube.*/watch\?(.*)v=([A-Za-z0-9_\-]+)}
+set youtube(pattern) {https?://(?:.*\.)?(?:youtube\.com/watch\?(?:.*&)?v=|youtu\.be)([A-Za-z0-9_\-]+)}
 # This is just used to avoid recursive loops and can be ignored.
 set youtube(maximum_redirects)  2
 # The maximum number of characters from a youtube title to print
@@ -53,7 +58,7 @@ set youtube(maximum_title_length) 256
 
 package require http
 
-set gTheScriptVersion "0.5"
+set gTheScriptVersion "0.6"
 
 proc note {msg} {
   putlog "% $msg"
@@ -80,57 +85,16 @@ proc make_tinyurl {url} {
 
 ###############################################################################
 
-proc flat_json_decoder {info_array_name json_blob} {
-   upvar 1 $info_array_name info_array
-   # 0 looking for key, 1 inside key, 2 looking for value, 3 inside value 
-   set kvmode 0
-   set cl 0
-   set i 1 
-   set length [string length $json_blob]
-   while { $i < $length } {
-      set c [string index $json_blob $i]
-      if { [string equal $c "\""] && [string equal $cl "\\"] == 0 } {
-         if { $kvmode == 0 } {
-            set kvmode 1
-            set start [expr $i + 1]
-         } elseif { $kvmode == 1 } {
-            set kvmode 2
-            set name [string range $json_blob $start [expr $i - 1]]
-         } elseif { $kvmode == 2 } {
-            set kvmode 3
-            set start [expr $i + 1]
-         } elseif { $kvmode == 3 } {
-            set kvmode 0
-            set info_array($name) [string range $json_blob $start [expr $i - 1]]
-         }
-      }
-      set cl $c
-      incr i 1
-   }
-}
-
-proc filter_title {blob} {
-   # Try and convert escaped unicode
-   set blob [subst -nocommands -novariables $blob]
-   set blob [string trim $blob]
-   set blob
-}
-
 proc extract_title {json_blob} {
-   global youtube
-   array set info_array {}
-   flat_json_decoder info_array $json_blob
-   if { [info exists info_array(title)] } {
-      set title [filter_title $info_array(title)]
-   } else {
-      error "Failed to find title.  JSON decoding failure?"
-   }
-   if { [string length $title] > $youtube(maximum_title_length) - 1 } {
-      set title [string range $title 0 $youtube(maximum_title_length)]"..."
-   } elseif { [string length $title] == 0 } {
-      set title "No usable title."
-   }
-   return $title
+	global youtube
+	set data [::json::json2dict $json_blob]
+	set title [string trim [dict get $data title]]
+	if {[string length $title] >= $youtube(maximum_title_length)} {
+		set title [string range $title 0 $youtube(maximum_title_length)]"…"
+	} elseif {[string length $title] == 0} {
+		set title "No usable title."
+	}
+	return $title
 }
 
 ###############################################################################
@@ -159,7 +123,7 @@ proc fetch_title {youtube_uri {recursion_count 0}} {
 
 proc public_youtube {nick userhost handle channel args} {
     global youtube botnick
-    if {[regexp -nocase -- $youtube(pattern) $args match fluff video_id]} {
+    if {[regexp -nocase -- $youtube(pattern) $args match video_id]} {
         note "Fetching title for $match."
         if {[catch {set title [fetch_title $match]} error]} {
             note "Failed to fetch title: $error"
