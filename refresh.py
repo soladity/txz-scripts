@@ -2,6 +2,7 @@
 
 import collections
 import csv
+import HTMLParser
 import os
 import re
 import signal
@@ -125,6 +126,8 @@ def slackware(_):
 FAIF_TITLE_RE = re.compile(r'^(?:episode\s*)?0x([0-9a-f]+)', re.I)
 
 def getFAIFVersions(url):
+    unescape = HTMLParser.HTMLParser().unescape
+
     root = getXMLRoot(FAIF_URL)
     for item in root.findall('.//item'):
         title = item.find('title')
@@ -139,7 +142,7 @@ def getFAIFVersions(url):
             continue
 
         ver = m.group(1).upper()
-        title = '0x' + ver + title[m.end(1):]
+        title = '0x' + ver + unescape(title[m.end(1):])
 
         link = normaliseString(link.text)
         if date is not None:
