@@ -34,17 +34,19 @@ proc readFaifCSV {filename data} {
 }
 
 proc refreshFaif {} {
-	global faif_topic
+	global faif_topic faif_topic_check
 	readFaifCSV scripts/data/faif faif
 	if {[faif rows]} {
 		set row [faif get row 0]
 		set faif_topic "[lindex $row 1] <[lindex $row 3]>"
+		set faif_topic_check "[lindex $row 1]"
 	}
 }
 
 proc initFaif {} {
-	global faif_topic
+	global faif_topic faif_topic_check
 	set faif_topic ""
+	set faif_topic_check ""
 
 	struct::matrix faif
 	faif add columns 5
@@ -153,29 +155,41 @@ proc initSlack {} {
 
 ### Global
 
-proc setTopic {nick channel topic} {
+proc setTopic {nick channel topic topic_check} {
 	set topic [string trim $topic]
-	if {[llength $topic]} {
-		set current [topic $channel]
-		set new [string range $current [expr 1 + [string first "|" $current]] [string length $current]]
-		set new "$topic | [string trim $new]"
-		if {$new != $current} {
-			putserv "PRIVMSG ChanServ :TOPIC $channel $new"
+	set current [string trim [topic $channel]]
+	set new $current
+	set message "I don't have necessary data yet."
+
+	if {$topic ne "" && [string first $topic_check $current] != -1} {
+		set message "There's no need to change the topic."
+		set topic ""
+	}
+
+	if {$topic ne ""} {
+		set new [expr 1 + [string first "|" $current]]
+		set new [string trim [string range $current $new end]]
+		if {$new eq ""} {
+			set new "^_^"
 		}
-		if {[llength $nick]} {
-			say $nick $channel $topic
-		}
-	} elseif {[llength $nick]} {
-		say $nick $channel "I don't have necessary data yet."
+		set new "$topic | $new"
+		set message $topic
+	}
+
+	if {$new ne $current} {
+		putserv "PRIVMSG ChanServ :TOPIC $channel $new"
+	}
+	if {$nick ne ""} {
+		say $nick $channel $message
 	}
 }
 
 proc pub:topic {nick uhost handle channel arg} {
 	global faif_topic slack_topic
 	if {$channel == "#faif"} {
-		setTopic $nick $channel $faif_topic
+		setTopic $nick $channel $faif_topic $faif_topic
 	} elseif {$channel == "#slackware.pl"} {
-		setTopic $nick $channel $slack_topic
+		setTopic $nick $channel $slack_topic $slack_topic
 	} else {
 		say $nick $channel "I'm not sure what you want me to do."
 	}
@@ -207,12 +221,16 @@ proc pub:refresh {nick uhost handle channel arg} {
 }
 
 proc refresh {} {
-	global faif_topic slack_topic
+	global faif_topic faif_topic_check slack_topic
 	putlog "tarball: Refreshing"
-	catch { refreshFaif }
-	catch { refreshSlack }
-	catch { setTopic {} "#faif" $faif_topic }
-	catch { setTopic {} "#slackware.pl" $slack_topic }
+	catch {
+		refreshFaif
+		setTopic "" "#faif" $faif_topic $faif_topic_check
+	}
+	catch {
+		refreshSlack
+		setTopic "" "#slackware.pl" $slack_topic $slack_topic
+	}
 }
 
 proc timer {min hour day month year} {
