@@ -6,6 +6,7 @@ import HTMLParser
 import os
 import re
 import signal
+import time
 import traceback
 import urllib
 import xml.etree.ElementTree as ET
@@ -150,15 +151,17 @@ def getFAIFVersions(url):
 
         yield (ver, title, link, None, date)
 
+DATE_RE = re.compile('^(.*\S)\s+([-+])(\d\d):?(\d\d)$')
+
 def normaliseFAIFVersion(entry):
-    # 0x5A has been release out of order (see note at
-    # <http://faif.us/cast/2014/oct/23/0x5A/>).  Sort it in release order.
-    ver = int(entry[0], 16)
-    if ver == 0x5A:
-        ver = 0x50
-    elif ver >= 0x50:
-        ver += 1
-    return ver
+    m = DATE_RE.search(entry[4].strip())
+    ts = time.mktime(time.strptime(m.group(1).strip(), '%a, %d %b %Y %H:%M:%S'))
+    offset = int(m.group(3), 10) * 3600 + int(m.group(4), 10) * 60
+    if m.group(2) == '-':
+        ts += offset
+    else:
+        ts -= offset
+    return ts, int(entry[0], 16)
 
 def faif(filename):
     versions = dict()
